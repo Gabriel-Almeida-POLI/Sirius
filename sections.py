@@ -40,32 +40,44 @@ def _first_pattern_match(text: str, patterns: Iterable[str]) -> bool:
     return False
 
 
-def find_consolidated_sections(pdf_path: str, *, max_pages: int = 40) -> Dict[str, Dict[str, int]]:
-    doc = fitz.open(pdf_path)
+def _scan_document(doc: fitz.Document, *, max_pages: int) -> Dict[str, Dict[str, int]]:
+    total_pages = doc.page_count
+    search_limit = min(max_pages, total_pages)
+    matches: Dict[str, SectionMatch] = {}
+
+    for page_index in range(search_limit):
+        page = doc.load_page(page_index)
+        text = page.get_text("text")
+
+        for key, patterns in PATTERN_MAP.items():
+            if key in matches:
+                continue
+            if _first_pattern_match(text, patterns):
+                matches[key] = SectionMatch(key=key, start_page=page_index + 1)
+
+    if not matches:
+        return {}
+
+    ordered = sorted(matches.values(), key=lambda item: item.start_page)
+    for current, nxt in zip(ordered, ordered[1:]):
+        current.end_page = max(current.start_page, nxt.start_page - 1)
+
+    ordered[-1].end_page = total_pages
+
+    return {match.key: match.to_dict() for match in ordered}
+
+
+def find_consolidated_spans_from_bytes(
+    pdf_bytes: bytes, *, max_pages: int = 40
+) -> Dict[str, Dict[str, int]]:
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     try:
-        total_pages = doc.page_count
-        search_limit = min(max_pages, total_pages)
-        matches: Dict[str, SectionMatch] = {}
-
-        for page_index in range(search_limit):
-            page = doc.load_page(page_index)
-            text = page.get_text("text")
-
-            for key, patterns in PATTERN_MAP.items():
-                if key in matches:
-                    continue
-                if _first_pattern_match(text, patterns):
-                    matches[key] = SectionMatch(key=key, start_page=page_index + 1)
-
-        if not matches:
-            return {}
-
-        ordered = sorted(matches.values(), key=lambda item: item.start_page)
-        for current, nxt in zip(ordered, ordered[1:]):
-            current.end_page = max(current.start_page, nxt.start_page - 1)
-
-        ordered[-1].end_page = total_pages
-
-        return {match.key: match.to_dict() for match in ordered}
+        return _scan_document(doc, max_pages=max_pages)
     finally:
         doc.close()
+
+
+def find_consolidated_spans(pdf_path: str, *, max_pages: int = 40) -> Dict[str, Dict[str, int]]:
+    with open(pdf_path, "rb") as pdf_file:
+        pdf_bytes = pdf_file.read()
+    return find_consolidated_spans_from_bytes(pdf_bytes, max_pages=max_pages)
