@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sirius — Extrator de DFs Consolidadas</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="hero">
+        <h1>DFs Consolidadas, direto do PDF</h1>
+        <p>
+          Arraste seus PDFs de ITR/DFP para extrair as demonstrações consolidadas em
+          segundos — tudo processado em memória, pronto para baixar.
+        </p>
+      </header>
+
+      <section class="upload-panel">
+        <div id="dropzone" class="dropzone" role="button" tabindex="0">
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M32 12L32 44"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M22 22L32 12L42 22"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <rect
+                x="14"
+                y="36"
+                width="36"
+                height="16"
+                rx="8"
+                stroke="currentColor"
+                stroke-width="2.5"
+              />
+            </svg>
+          </div>
+          <div class="dropzone-text">
+            <strong>Arraste seus PDFs aqui</strong>
+            <span>ou clique para selecionar arquivos</span>
+          </div>
+          <input id="file-input" type="file" accept="application/pdf" multiple />
+        </div>
+        <div class="options-panel">
+          <button
+            id="options-toggle"
+            class="options-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="options-form"
+          >
+            Opções avançadas
+            <span class="toggle-caret" aria-hidden="true"></span>
+          </button>
+          <form id="options-form" class="options-form" aria-hidden="true">
+            <fieldset class="option-group">
+              <legend>Motor de extração</legend>
+              <label class="option-field" for="engine-select">
+                <span>Motor</span>
+                <select id="engine-select" name="engine">
+                  <option value="auto" selected>Automático</option>
+                  <option value="pdfplumber">pdfplumber</option>
+                  <option value="camelot">camelot (se disponível)</option>
+                </select>
+              </label>
+            </fieldset>
+
+            <fieldset class="option-group">
+              <legend>Ajustes de tabela</legend>
+              <label class="option-toggle">
+                <input type="checkbox" name="stitch" id="stitch-toggle" checked />
+                <span>Unir tabelas multi-página</span>
+              </label>
+              <label class="option-toggle">
+                <input type="checkbox" name="normalize_schema" id="schema-toggle" checked />
+                <span>Normalizar schema por seção</span>
+              </label>
+            </fieldset>
+
+            <fieldset class="option-group">
+              <legend>Downloads</legend>
+              <label class="option-field" for="format-select">
+                <span>Formato</span>
+                <select id="format-select" name="download_format">
+                  <option value="csv" selected>CSV</option>
+                  <option value="parquet">Parquet</option>
+                </select>
+              </label>
+              <label class="option-toggle">
+                <input type="checkbox" name="include_report" id="report-toggle" checked />
+                <span>Incluir relatório JSON no ZIP</span>
+              </label>
+            </fieldset>
+          </form>
+        </div>
+      </section>
+
+      <section id="cards" class="cards"></section>
+    </main>
+
+    <template id="card-template">
+      <article class="card" aria-live="polite">
+        <div class="card-banner" role="status" hidden></div>
+        <div class="card-header">
+          <div class="file-name">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 3h6l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+                <path d="M13 3v5h5" />
+              </svg>
+            </span>
+            <span class="file-label"></span>
+          </div>
+          <div class="file-meta"></div>
+        </div>
+        <div class="progress-wrapper" role="status" aria-live="polite">
+          <div class="progress-bar"></div>
+        </div>
+        <div class="card-body">
+          <div class="card-skeleton" aria-hidden="true">
+            <div class="skeleton-line w-60"></div>
+            <div class="skeleton-line w-40"></div>
+            <div class="skeleton-pill-group">
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill"></div>
+            </div>
+            <div class="skeleton-table">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <template id="section-template">
+      <div class="section">
+        <button class="section-chip" type="button" aria-expanded="false"></button>
+        <div class="section-content">
+          <div class="section-meta"></div>
+          <div class="section-actions"></div>
+          <div class="section-preview"></div>
+        </div>
+      </div>
+    </template>
+
+    <script src="/static/app.js" type="module"></script>
+  </body>
+</html>
