@@ -37,7 +37,6 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.out and not args.legacy_cli:
         parser.error("--out só pode ser usado em conjunto com --legacy-cli.")
-
     return args
 
 
@@ -47,7 +46,6 @@ def _load_uvicorn():
         raise ModuleNotFoundError(
             "uvicorn não está instalado. Instale a dependência para iniciar a UI."
         )
-
     module = importlib_util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -60,6 +58,7 @@ def _run_ui() -> None:
 
 
 def _legacy_cli(pdf_path: Path, output_dir: Optional[Path]) -> None:
+    """Fluxo antigo por caminho de arquivo (opcional)."""
     print(UI_MESSAGE)
 
     if not pdf_path.exists():
@@ -73,6 +72,7 @@ def _legacy_cli(pdf_path: Path, output_dir: Optional[Path]) -> None:
         )
         return
 
+    # Import tardio para não exigir dependências no modo UI.
     sections_module = importlib.import_module("sections")
     find_consolidated_spans = sections_module.find_consolidated_spans
 
