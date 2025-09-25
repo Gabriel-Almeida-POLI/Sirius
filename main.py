@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from sections import find_consolidated_sections
+from sections import find_consolidated_spans
 
 
 PDF_PATHS = [
-    Path("/mnt/data/DFP - 2024.pdf"),
-    Path("/mnt/data/ITR 1T25.pdf"),
+    Path("DFP - 2024.pdf"),
+    Path("ITR 1T25.pdf"),
 ]
 
 
@@ -16,7 +16,7 @@ def main() -> None:
             print("Arquivo não encontrado.")
             continue
 
-        sections = find_consolidated_sections(str(pdf_path))
+        sections = find_consolidated_spans(str(pdf_path))
         print(sections)
 
 
